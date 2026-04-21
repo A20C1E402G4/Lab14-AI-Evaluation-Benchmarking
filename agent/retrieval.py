@@ -9,7 +9,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_community.vectorstores import Chroma
 from langchain_community.retrievers import BM25Retriever
-from langchain_ollama import OllamaEmbeddings
+from langchain_openai import OpenAIEmbeddings
 
 
 DEFAULT_ANSWER_STYLE = (
@@ -148,7 +148,7 @@ def get_rag_components():
 
     # 1. Khởi tạo Embeddings & VectorStore
     print("Đang khởi tạo Ollama Embeddings và ChromaDB...")
-    embeddings = OllamaEmbeddings(model="nomic-embed-text")
+    embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
     vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
 
     # 2. Cấu hình Hybrid Retriever (Vector + BM25) + Rerank
