@@ -22,8 +22,16 @@ _JUDGE_PROMPT = (
     "Question: {question}\n"
     "Reference Answer: {reference}\n"
     "Student Answer: {answer}\n\n"
-    "Reply with a single integer (1-5) only."
+    "Reply with JSON only, no markdown: {{\"score\": <1-5>, \"reasoning\": \"<one sentence>\"}}"
 )
+
+_SCORE_LABELS = {
+    1: "Completely wrong or irrelevant",
+    2: "Major errors or missing key points",
+    3: "Partially correct, missing details",
+    4: "Mostly correct with minor issues",
+    5: "Fully correct and well-explained",
+}
 
 
 def _get_anthropic() -> anthropic.AsyncAnthropic:
@@ -40,41 +48,51 @@ def _get_openai() -> AsyncOpenAI:
     return _openai_client
 
 
-def _parse_score(text: str) -> int:
-    for ch in text.strip():
-        if ch.isdigit():
-            return max(1, min(5, int(ch)))
-    return 3
+def _parse_score_and_reasoning(text: str) -> tuple[int, str]:
+    """Parse JSON response {score, reasoning} with fallback to digit scan."""
+    import json as _json
+    text = text.strip()
+    try:
+        data = _json.loads(text)
+        score = max(1, min(5, int(data["score"])))
+        reasoning = str(data.get("reasoning", _SCORE_LABELS.get(score, "")))
+        return score, reasoning
+    except Exception:
+        for ch in text:
+            if ch.isdigit():
+                score = max(1, min(5, int(ch)))
+                return score, _SCORE_LABELS.get(score, "")
+        return 3, _SCORE_LABELS[3]
 
 
-async def _judge_claude(question: str, answer: str, ground_truth: str) -> int:
+async def _judge_claude(question: str, answer: str, ground_truth: str) -> tuple[int, str]:
     prompt = _JUDGE_PROMPT.format(question=question, reference=ground_truth, answer=answer)
     for attempt in range(5):
         try:
             async with _SEMAPHORE:
                 response = await _get_anthropic().messages.create(
                     model=_CLAUDE_MODEL,
-                    max_tokens=10,
+                    max_tokens=80,
                     messages=[{"role": "user", "content": prompt}],
                 )
-            return _parse_score(response.content[0].text)
+            return _parse_score_and_reasoning(response.content[0].text)
         except Exception as e:
             if "rate_limit" in str(e).lower() and attempt < 4:
                 await asyncio.sleep(2 ** attempt + 2)
             else:
-                return 3  # fallback on persistent failure
+                return 3, _SCORE_LABELS[3]
 
 
-async def _judge_openai(question: str, answer: str, ground_truth: str) -> int:
+async def _judge_openai(question: str, answer: str, ground_truth: str) -> tuple[int, str]:
     prompt = _JUDGE_PROMPT.format(question=question, reference=ground_truth, answer=answer)
     async with _SEMAPHORE:
         response = await _get_openai().chat.completions.create(
             model=_GPT_MODEL,
-            max_tokens=10,
+            max_tokens=80,
             temperature=0,
             messages=[{"role": "user", "content": prompt}],
         )
-    return _parse_score(response.choices[0].message.content)
+    return _parse_score_and_reasoning(response.choices[0].message.content)
 
 
 def _cohen_kappa(a_scores: List[int], b_scores: List[int]) -> float:
@@ -98,7 +116,7 @@ class LLMJudge:
         self._scores_gpt: List[int] = []
 
     async def evaluate_multi_judge(self, question: str, answer: str, ground_truth: str) -> Dict[str, Any]:
-        score_claude, score_gpt = await asyncio.gather(
+        (score_claude, reasoning_claude), (score_gpt, reasoning_gpt) = await asyncio.gather(
             _judge_claude(question, answer, ground_truth),
             _judge_openai(question, answer, ground_truth),
         )
@@ -109,26 +127,27 @@ class LLMJudge:
         diff = abs(score_claude - score_gpt)
 
         if diff <= 1:
-            # Models agree — average their scores
             final_score = (score_claude + score_gpt) / 2
             agreement_rate = 1.0
+            status = "consensus"
         elif diff == 2:
-            # Moderate conflict — average but flag lower agreement
             final_score = (score_claude + score_gpt) / 2
             agreement_rate = 0.5
+            status = "moderate_conflict"
         else:
-            # High conflict (diff >= 3) — use Claude as tiebreaker
+            # High conflict — use Claude as tiebreaker
             final_score = float(score_claude)
             agreement_rate = 0.0
+            status = "conflict"
 
         return {
             "final_score": round(final_score, 2),
             "agreement_rate": agreement_rate,
-            "individual_scores": {
-                "claude-haiku": score_claude,
-                "gpt-4o-mini": score_gpt,
+            "individual_results": {
+                _CLAUDE_MODEL: {"score": score_claude, "reasoning": reasoning_claude},
+                _GPT_MODEL:    {"score": score_gpt,    "reasoning": reasoning_gpt},
             },
-            "reasoning": f"Claude={score_claude}, GPT={score_gpt}, diff={diff}",
+            "status": status,
         }
 
     async def check_position_bias(self, response_a: str, response_b: str) -> Dict[str, Any]:

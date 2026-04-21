@@ -2,39 +2,39 @@
   "metadata": {
     "version": "Agent_V2_Optimized",
     "total": 70,
-    "timestamp": "2026-04-21 17:44:26"
+    "timestamp": "2026-04-21 17:54:34"
   },
   "metrics": {
-    "avg_score": 4.1214,
+    "avg_score": 4.1286,
     "hit_rate": 0.7429,
     "mrr": 0.6569,
-    "agreement_rate": 0.8857,
-    "cohen_kappa": 0.8857,
+    "agreement_rate": 0.9,
+    "cohen_kappa": 0.9,
     "pass_rate": 0.8429
   },
   "cost": {
-    "total_tokens": 157248,
+    "total_tokens": 157216,
     "total_cost_usd": 0.0236,
-    "avg_tokens_per_case": 157248.0
+    "avg_tokens_per_case": 157216.0
   },
   "regression": {
     "v1_metrics": {
-      "avg_score": 4.0143,
+      "avg_score": 4.1143,
       "hit_rate": 0.7429,
       "mrr": 0.6476,
-      "agreement_rate": 0.9,
-      "cohen_kappa": 0.9,
-      "pass_rate": 0.7857
+      "agreement_rate": 0.8571,
+      "cohen_kappa": 0.8571,
+      "pass_rate": 0.8286
     },
     "v2_metrics": {
-      "avg_score": 4.1214,
+      "avg_score": 4.1286,
       "hit_rate": 0.7429,
       "mrr": 0.6569,
-      "agreement_rate": 0.8857,
-      "cohen_kappa": 0.8857,
+      "agreement_rate": 0.9,
+      "cohen_kappa": 0.9,
       "pass_rate": 0.8429
     },
-    "delta_score": 0.1071,
+    "delta_score": 0.0143,
     "delta_hit_rate": 0.0
   },
   "gate": {

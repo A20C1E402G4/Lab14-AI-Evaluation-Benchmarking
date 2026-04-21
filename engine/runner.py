@@ -51,14 +51,20 @@ class BenchmarkRunner:
             test_case["expected_answer"],
         )
 
+        # Faithfulness proxy: 1.0 if relevant context was retrieved, 0.5 otherwise
+        # Relevancy proxy: MRR (higher rank of relevant doc = more relevant context)
+        faithfulness = round(0.5 + 0.5 * hit_rate, 2)
+        relevancy = round(mrr, 2) if mrr > 0 else 0.0
+
         return {
             "test_case": test_case["question"],
             "agent_response": response["answer"],
             "latency": latency,
-            "tokens_used": tokens_used,
-            "cost_usd": cost_usd,
             "ragas": {
-                "retrieval": {"hit_rate": hit_rate, "mrr": mrr}
+                "hit_rate": hit_rate,
+                "mrr": mrr,
+                "faithfulness": faithfulness,
+                "relevancy": relevancy,
             },
             "judge": judge_result,
             "status": "fail" if judge_result["final_score"] < 3 else "pass",

@@ -42,12 +42,8 @@ async def run_benchmark_with_results(agent_version: str, agent: MainAgent | None
 
     metrics = {
         "avg_score": round(sum(r["judge"]["final_score"] for r in results) / total, 4),
-        "hit_rate": round(
-            sum(r["ragas"]["retrieval"]["hit_rate"] for r in results) / total, 4
-        ),
-        "mrr": round(
-            sum(r["ragas"]["retrieval"]["mrr"] for r in results) / total, 4
-        ),
+        "hit_rate": round(sum(r["ragas"]["hit_rate"] for r in results) / total, 4),
+        "mrr": round(sum(r["ragas"]["mrr"] for r in results) / total, 4),
         "agreement_rate": agreement_stats["agreement_rate"],
         "cohen_kappa": agreement_stats.get("cohen_kappa", 0.0),
         "pass_rate": round(sum(1 for r in results if r["status"] == "pass") / total, 4),
@@ -130,18 +126,7 @@ async def main():
     with open("reports/summary.json", "w", encoding="utf-8") as f:
         json.dump(final_summary, f, ensure_ascii=False, indent=2)
 
-    benchmark_results = {
-        "v1": {
-            "version": "Agent_V1_Base",
-            "summary": v1_summary["metrics"],
-            "results": v1_results,
-        },
-        "v2": {
-            "version": "Agent_V2_Optimized",
-            "summary": v2_summary["metrics"],
-            "results": v2_results,
-        },
-    }
+    benchmark_results = {"v1": v1_results, "v2": v2_results}
     with open("reports/benchmark_results.json", "w", encoding="utf-8") as f:
         json.dump(benchmark_results, f, ensure_ascii=False, indent=2)
 
