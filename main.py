@@ -73,13 +73,13 @@ async def run_benchmark(version: str, agent: MainAgent | None = None):
 async def main():
     # V1: basic BM25 top_k=3
     v1_agent = MainAgent(top_k=3, version="v1")
-    v1_summary = await run_benchmark("Agent_V1_Base", v1_agent)
+    v1_results, v1_summary = await run_benchmark_with_results("Agent_V1_Base", v1_agent)
 
     # V2: improved BM25 top_k=5 (more context)
     v2_agent = MainAgent(top_k=5, version="v2")
     v2_results, v2_summary = await run_benchmark_with_results("Agent_V2_Optimized", v2_agent)
 
-    if not v1_summary or not v2_summary:
+    if not v1_results or not v1_summary or not v2_results or not v2_summary:
         print("❌ Benchmark failed. Check data/golden_set.jsonl.")
         return
 
@@ -130,8 +130,20 @@ async def main():
     with open("reports/summary.json", "w", encoding="utf-8") as f:
         json.dump(final_summary, f, ensure_ascii=False, indent=2)
 
+    benchmark_results = {
+        "v1": {
+            "version": "Agent_V1_Base",
+            "summary": v1_summary["metrics"],
+            "results": v1_results,
+        },
+        "v2": {
+            "version": "Agent_V2_Optimized",
+            "summary": v2_summary["metrics"],
+            "results": v2_results,
+        },
+    }
     with open("reports/benchmark_results.json", "w", encoding="utf-8") as f:
-        json.dump(v2_results, f, ensure_ascii=False, indent=2)
+        json.dump(benchmark_results, f, ensure_ascii=False, indent=2)
 
     if approved:
         print("\n✅ DECISION: APPROVE RELEASE")
