@@ -1,7 +1,13 @@
-# Individual Reflection — Bethokawaii
+# Individual Reflection
+
+**Name:** Nguyen Tien Huy Hoang
+
+**Student ID:** 2A202600486
 
 **Lab:** Day 14 — AI Evaluation Factory
+
 **Role:** DevOps/Analyst — Async Runner, Cost Tracking & Regression Release Gate
+
 **Commit:** `8c419cc` — `feat(pipeline): async benchmark runner with cost tracking and regression release gate`
 
 ---
