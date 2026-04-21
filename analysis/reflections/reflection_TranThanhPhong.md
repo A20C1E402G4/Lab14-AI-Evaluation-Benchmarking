@@ -1,5 +1,4 @@
-# Individual Reflection — thnhphng04
-
+# Individual Reflection — Tran Thanh Phong
 **Lab:** Day 14 — AI Evaluation Factory
 **Role:** Data & SDG (Synthetic Data Generation)
 **Commit:** `8aae319` — `feat(data): generate golden dataset with SDG and complete failure analysis`
