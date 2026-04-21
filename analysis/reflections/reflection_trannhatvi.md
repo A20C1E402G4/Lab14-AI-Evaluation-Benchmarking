@@ -1,4 +1,4 @@
-# Individual Reflection — trannhatvi-ai
+# Individual Reflection — Trần Nhật Vĩ - 2A202600497
 
 **Lab:** Day 14 — AI Evaluation Factory
 **Role:** AI/Backend — Multi-Judge Consensus & Retrieval Evaluation
