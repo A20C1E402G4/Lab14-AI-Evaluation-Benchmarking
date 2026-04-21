@@ -1,0 +1,14 @@
+langchain-text-splitters
+langchain-community
+langchain-openai
+langchain-core
+faiss-cpu
+unstructured
+pypdf
+langchain_ollama
+streamlit
+flashrank
+chromadb
+rank-bm25
+pytesseract
+pdf2image

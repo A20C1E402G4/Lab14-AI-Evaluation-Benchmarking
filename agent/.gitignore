@@ -1,0 +1,21 @@
+# Bỏ qua Vector DB
+chroma_db/
+
+# Bỏ qua môi trường ảo
+venv/
+env/
+.env
+
+# Bỏ qua cache của Python
+__pycache__/
+*.pyc
+
+# Bỏ qua các file log
+*.log
+# Bỏ qua các file tạm thời
+*.tmp
+# Bỏ qua các file cấu hình cá nhân
+*.config
+# Bỏ qua các file dữ liệu lớn
+data/
+papers/
