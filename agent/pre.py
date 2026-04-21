@@ -138,8 +138,10 @@ def ingest_documents(docs: list[Document], batch_size: int = 50):
     index = _get_or_create_index(pc)
     embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
 
-    # Delete existing vectors before re-ingesting
-    index.delete(delete_all=True)
+    # Delete existing vectors before re-ingesting (skip if index is empty)
+    stats = index.describe_index_stats()
+    if stats.get("total_vector_count", 0) > 0:
+        index.delete(delete_all=True)
 
     vectorstore = PineconeVectorStore(index=index, embedding=embeddings)
     ids = [doc.metadata.get("chunk_id", str(i)) for i, doc in enumerate(docs)]
